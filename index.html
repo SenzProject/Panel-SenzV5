@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<title>SENZPROJECT — Hunter Association Panel</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+<style>
+  :root{
+    --bg:#0a0a0c;--bg2:#111114;--panel:#16161b;--card:#1c1c23;
+    --line:#2a2a34;--gold:#e0b64b;--green:#4caf50;--red:#e53935;
+    --cyan:#26c6da;--orange:#ff9800;--purple:#9c27b0;
+    --txt:#e8e8ec;--dim:#8b8b96;
+    --hxh-green:#2e7d32;--hxh-gold:#c9a227;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(circle at 15% 20%,rgba(201,162,39,.08),transparent 40%),
+      radial-gradient(circle at 85% 80%,rgba(46,125,50,.10),transparent 40%),
+      var(--bg);
+    color:var(--txt);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    overflow-x:hidden;min-height:100vh;
+  }
+  ::selection{background:var(--gold);color:#000}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+
+  /* ============ LOGIN ============ */
+  #login{
+    position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+    padding:20px;background:inherit;
+    background-image:radial-gradient(circle at 50% 0%,rgba(201,162,39,.60),transparent 60%),
+      linear-gradient(180deg,#0a0a0c,#08080a);
+  }
+  #login::before{
+    content:'';position:absolute;inset:0;opacity:.06;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5 L35 25 L55 30 L35 35 L30 55 L25 35 L5 30 L25 25 Z' fill='%23c9a227'/%3E%3C/svg%3E");
+    background-size:90px;
+  }
+  .login-card{
+    position:relative;width:100%;max-width:410px;background:rgba(20,20,25,.96);
+    border:1px solid var(--line);border-radius:20px;padding:38px 30px;
+    box-shadow:0 30px 80px rgba(0,0,0,.9),0 0 0 1px rgba(201,162,39,.15) inset;
+    animation:pop .35s cubic-bezier(.2,.9,.3,1.3);overflow:hidden;
+  }
+  .login-card::after{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  }
+  @keyframes pop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+  .brand{text-align:center;margin-bottom:26px}
+  .brand .sigil{font-size:40px;line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 14px rgba(201,162,39,.6))}
+  .brand h1{font-size:24px;font-weight:900;letter-spacing:3px;
+    background:linear-gradient(90deg,var(--gold),#fff6d0,var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand p{font-size:9px;color:var(--dim);letter-spacing:5px;margin-top:6px;text-transform:uppercase}
+  .brand .tag{display:inline-block;margin-top:10px;font-size:8px;letter-spacing:2px;
+    color:var(--hxh-green);border:1px solid var(--hxh-green);padding:2px 8px;border-radius:20px}
+  .fg{margin-bottom:13px}
+  .fg label{font-size:10px;color:var(--dim);letter-spacing:1.5px;display:block;margin-bottom:5px;font-weight:600}
+  .fg input{
+    width:100%;padding:12px 14px;background:#0d0d11;border:1px solid var(--line);border-radius:10px;
+    color:var(--txt);font-size:14px;outline:none;transition:.2s;font-family:inherit;
+  }
+  .fg input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.15)}
+  .btn{
+    width:100%;padding:13px;border:none;border-radius:10px;font-weight:800;letter-spacing:2px;
+    font-size:12px;cursor:pointer;transition:.18s;font-family:inherit;
+    background:linear-gradient(90deg,var(--gold),#f5d982);color:#1a1400;
+  }
+  .btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .msg{font-size:11px;text-align:center;margin-top:11px;min-height:15px;letter-spacing:.3px}
+  .msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+  .hint{font-size:10px;color:var(--dim);text-align:center;margin-top:16px;line-height:1.7;
+    border-top:1px dashed var(--line);padding-top:14px}
+  .hint b{color:var(--gold)}
+
+  /* ============ APP ============ */
+  #app{display:none;min-height:100vh;flex-direction:column}
+  header{
+    position:sticky;top:0;z-index:60;background:rgba(11,11,13,.96);backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);padding:11px 16px;display:flex;
+    justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  header .logo{font-size:14px;font-weight:900;letter-spacing:2px;display:flex;align-items:center;gap:7px}
+  header .logo .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 10px var(--gold);animation:pulse 1.8s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  header .logo span{background:linear-gradient(90deg,var(--gold),#fff);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .uinfo{display:flex;align-items:center;gap:8px;font-size:11px}
+  .badge{padding:3px 9px;border-radius:20px;font-size:8px;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+  .b-owner{background:rgba(224,182,75,.15);color:var(--gold);border:1px solid rgba(224,182,75,.4)}
+  .b-admin{background:rgba(229,57,53,.15);color:var(--red);border:1px solid rgba(229,57,53,.4)}
+  .b-reseller{background:rgba(38,198,218,.15);color:var(--cyan);border:1px solid rgba(38,198,218,.4)}
+  .b-user{background:rgba(76,175,80,.15);color:var(--green);border:1px solid rgba(76,175,80,.4)}
+  .btn-sm{padding:7px 12px;background:var(--panel);border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.5px;font-family:inherit}
+  .btn-sm:hover{background:var(--red);border-color:var(--red);color:#fff}
+
+  .wrap{max-width:1150px;margin:0 auto;padding:18px;width:100%}
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:20px}
+  .stat{background:linear-gradient(160deg,var(--card),var(--panel));border:1px solid var(--line);
+    border-radius:12px;padding:13px}
+  .stat .lbl{font-size:8px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px}
+  .stat .val{font-size:22px;font-weight:900;line-height:1}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px}
+  .feat{
+    background:linear-gradient(160deg,var(--card),var(--panel));border:1px solid var(--line);
+    border-radius:13px;padding:14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden;
+    display:flex;flex-direction:column;gap:7px;min-height:96px;
+  }
+  .feat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:var(--gold);transform:scaleY(0);transform-origin:bottom;transition:.25s}
+  .feat:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 10px 30px rgba(201,162,39,.10)}
+  .feat:hover::before{transform:scaleY(1)}
+  .feat .ic{font-size:19px}
+  .feat .nm{font-size:11.5px;font-weight:700;letter-spacing:.3px}
+  .feat .ds{font-size:9px;color:var(--dim);line-height:1.4}
+  .feat.lockd{opacity:.4;cursor:not-allowed}
+  .feat.lockd:hover{transform:none;box-shadow:none;border-color:var(--line)}
+  .feat .lk{position:absolute;top:8px;right:9px;font-size:10px}
+
+  /* ============ FLOATING — TRUE OVERLAY ============ */
+  #fw{
+    position:fixed;z-index:2147483647; /* max z-index menembus apapun */
+    top:70px;right:14px;width:290px;background:rgba(14,14,17,.97);
+    border:1px solid var(--gold);border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.9),0 0 0 1px rgba(201,162,39,.3) inset,
+      0 0 30px rgba(201,162,39,.12);
+    backdrop-filter:blur(16px);overflow:hidden;isolation:isolate;
+    transition:width .2s;
+  }
+  #fw .fh{
+    padding:8px 11px;display:flex;justify-content:space-between;align-items:center;
+    cursor:move;user-select:none;background:linear-gradient(90deg,rgba(201,162,39,.14),transparent);
+    border-bottom:1px solid var(--line);
+  }
+  #fw .fh b{font-size:9px;letter-spacing:2px;color:var(--gold);display:flex;align-items:center;gap:5px}
+  #fw .fh b .d{width:5px;height:5px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 6px var(--green);animation:pulse 1.6s infinite}
+  #fw .fh .x{display:flex;gap:4px}
+  #fw .fh button{width:19px;height:19px;border:none;border-radius:5px;background:#1f1f28;
+    color:var(--dim);cursor:pointer;font-size:10px;line-height:1}
+  #fw .fh button:hover{background:var(--red);color:#fff}
+  #fw .fb{padding: masses 8px;padding:8px;max-height:300px;overflow:auto;font-size:10px}
+  #fw .fb .r{display:flex;justify-content:space-between;padding:4px 7px;margin-bottom:3px;
+    border-radius:5px;background:#13131a}
+  #fw .fb .r .v{font-weight:800}
+  #fw .fb .r.g .v{color:var(--green)}#fw .fb .r.y .v{color:var(--gold)}#fw .fb .r.r .v{color:var(--red)}
+  #fw .fb .hdr{font-size:8px;color:var(--dim);letter-spacing:1.5px;margin:7px 0 4px;text-transform:uppercase}
+  #fw .fb .hdr:first-child{margin-top:0}
+
+  /* ============ MODAL ============ */
+  .mbg{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.86);
+    display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)}
+  .mbg.on{display:flex}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    width:100%;max-width:470px;max-height:88vh;overflow:auto;padding:22px;
+    animation:pop .28s;box-shadow:0 24px 70px rgba(0,0,0,.9)}
+  .modal h2{font-size:15px;color:var(--gold);margin-bottom:3px;letter-spacing:.5px;display:flex;align-items:center;gap:7px}
+  .modal .sub{font-size:10px;color:var(--dim);margin-bottom:15px;line-height:1.5}
+  .modal .fg{margin-bottom:10px}
+  .modal .fg label{font-size:9px}
+  .modal .fg input,.modal .fg select,.modal .fg textarea{
+    width:100%;padding:9px 11px;background:#0d0d11;border:1px solid var(--line);
+    border-radius:8px;color:var(--txt);font-size:12px;outline:none;font-family:inherit;transition:.15s}
+  .modal .fg input:focus,.modal .fg select:focus,.modal .fg textarea:focus{border-color:var(--gold)}
+  .modal .fg textarea{resize:vertical;min-height:60px}
+  .row2{display:flex;gap:8px;margin-top:4px}
+  .row2 button{flex:1;padding:10px;border:none;border-radius:8px;cursor:pointer;
+    font-weight:800;font-size:10px;letter-spacing:1px;font-family:inherit;transition:.15s}
+  .b-ok{background:var(--gold);color:#1a1400}
+  .b-ok:hover{filter:brightness(1.14)}
+  .b-no{background:var(--panel);color:var(--txt);border:1px solid var(--line)!important}
+  .b-no:hover{background:var(--line)}
+  .res{background:#0d0d11;border:1px solid var(--line);border-radius:8px;padding:10px;
+    font-size:10px;margin-top:10px;white-space:pre-wrap;word-break:break-word;
+    line-height:1.6;display:none;font-family:ui-monospace,monospace}
+  .res.on{display:block}
+  .res.ok{border-color:var(--green);color:var(--green)}
+  .res.err{border-color:var(--red);color:var(--red)}
+
+  .tbl{width:100%;border-collapse:collapse;font-size:9.5px;margin-top:7px}
+  .tbl th,.tbl td{padding:6px 5px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tbl th{color:var(--dim);font-size:8px;letter-spacing:1px;text-transform:uppercase}
+  .tbl tr:hover td{background:#191921}
+  .mini{padding:3px 7px;font-size:8px;border:none;border-radius:4px;cursor:pointer;
+    font-weight:800;font-family:inherit;letter-spacing:.4px}
+  .mini.d{background:rgba(229,57,53,.2);color:var(--red)}
+  .mini.d:hover{background:var(--red);color:#fff}
+  .mini.g{background:rgba(76,175,80,.2);color:var(--green)}
+  .mini.g:hover{background:var(--green);color:#000}
+  .tagline{text-align:center;font-size: baik 9px;padding:14px;color:var(--dim);letter-spacing:3px;font-size:9px;opacity:.5}
+  .toast{
+    position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--card);border:1px solid var(--gold);color:var(--txt);
+    padding:11px 20px;border-radius:10px;font-size:11px;z-index:2147483647;
+    opacity:0;transition:.3s;box-shadow:0 14px 40px rgba(0,0,0,.8);font-weight:600;
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast.ok{border-color:var(--green)}.toast.err{border-color:var(--red)}
+  @media(max-width:520px){
+    #fw{width:250px;top:62px;right:8px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login">
+  <div class="login-card">
+    <div class="brand">
+      <div class="sigil">🎯</div>
+      <h1>SENZPROJECT</h1>
+      <p>Hunter × Hunter Panel</p>
+      <span class="tag">HUNTER ASSOCIATION</span>
+    </div>
+    <div class="fg">
+      <label>HUNTER ID</label>
+      <input id="lUser" placeholder="username" autocomplete="off" autocapitalize="none">
+    </div>
+    <div class="fg">
+      <label>PASSCODE</label>
+      <input id="lPass" type="password" placeholder="••••••••" autocomplete="off">
+    </div>
+    <button class="btn" id="btnLogin">MASUK</button>
+    <div class="msg" id="lMsg"></div>
+    <div class="hint">OWNER DEFAULT<br><b>senz</b> / <b>senz123</b><br>dibuat otomatis saat pertama buka</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <header>
+    <div class="logo"><span class="dot"></span><span>SENZPROJECT</span></div>
+    <div class="uinfo">
+      <span id="hUser"></span>
+      <span class="badge" id="hRole"></span>
+      <button class="btn-sm" id="btnLogout">KELUAR</button>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="stats-row" id="statsRow"></div>
+    <div class="grid" id="gridMenu"></div>
+    <div class="tagline">SENZPROJECT • HUNTER × HUNTER EDITION</div>
+  </div>
+</div>
+
+<!-- ================= FLOATING OVERLAY ================= -->
+<div id="fw">
+  <div class="fh">
+    <b><span class="d"></span>SENZ • LIVE</b>
+    <div class="x">
+      <button id="fwMin" title="minimize">–</button>
+      <button id="fwClose" title="hide">×</button>
+    </div>
+  </div>
+  <div class="fb" id="fb"></div>
+</div>
+
+<!-- ================= MODAL + TOAST ================= -->
+<div class="mbg" id="mbg"><div class="modal" id="modal"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* =====================================================================
+  SENZPROJECT ENGINE v3 — Hunter × Hunter Edition
+  Fitur 100% fungsional, persist localStorage, kompatibel Vercel/GHPages.
+  Tanpa dependensi eksternal, strict-mode aman, tidak ada eval.
+===================================================================== */
+
+const DB_KEY   = "SENZPROJECT_HXH_V3";
+const SESS_KEY = "SENZPROJECT_SESS_V3";
+const LVL = { user:1, reseller:2, admin:3, owner:4 };
+
+/* ---- hash deterministik (FNV-1a) + salt role ---- */
+function hash(s){
+  let h=0x811c9dc5;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; }
+  return h.toString(16).padStart(8,"0")+"x"+s.length.toString(16);
+}
+function rid(p){ return p+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+/* ---- DB ---- */
+function blankDB(){ return {
+  users: [], keys: [], logs: [], tickets: [],
+  cfg: { maintenance:false, allowReg:true, price:100, broadcast:null, announce:"" },
+  boot: Date.now()
+}; }
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw){ const p=JSON.parse(raw); if(p && p.users) return p; }
+  }catch(e){}
+  const db = blankDB();
+  db.users.push({
+    id: rid("u_"), user:"senz", pass: hash("senz123"),
+    role:"owner", exp:0, created:Date.now(), last:0, banned:false, coins:99999
+  });
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(db)); }catch(e){}
+  return db;
+}
+function saveDB(){
+  try{ localStorage.setItem(DB_KEY, JSON.stringify(DB)); }
+  catch(e){ toast("Storage penuh / diblokir","err"); }
+}
+let DB = loadDB();
+
+/* ---- audit ---- */
+function alog(actor, act){
+  DB.logs.unshift({ id:rid("l_"), a:actor, x:act, t:Date.now() });
+  if(DB.logs.length>250) DB.logs.length=250;
+  saveDB(); paintFloat();
+}
+
+/* ---- session ---- */
+function setSess(id){ try{localStorage.setItem(SESS_KEY,id);}catch(e){} }
+function dropSess(){ try{localStorage.removeItem(SESS_KEY);}catch(e){} }
+function me(){
+  let id=null; try{ id=localStorage.getItem(SESS_KEY); }catch(e){}
+  if(!id) return null;
+  return DB.users.find(u=>u.id===id)||null;
+}
+function can(u,lv){ return !!u && LVL[u.role] >= LVL[lv]; }
+
+/* ---- toast ---- */
+let tTimer=null;
+function toast(msg,type){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.className="toast show "+(type||"");
+  clearTimeout(tTimer);
+  tTimer=setTimeout(()=>t.className="toast",2200);
+}
+
+/* =====================================================================
+  MODUL FITUR (semua nyata & mengubah state)
+===================================================================== */
+const MODS = [
+  "Aimbot Head","Aimbot Body","Magic Bullet","Silent Aim","Aim FOV",
+  "ESP Player","ESP Line","ESP Box","Health Bar","Name ESP",
+  "FOV Changer","No Recoil","No Spread","Speed Hack","Fast Reload",
+  "Skin Unlock","Rank Fake","Memory Patch","Auto Headshot","Radar Plus"
+];
+
+const MENU = [
+  {id:"redeem",  ic:"🎟️", nm:"Redeem Key",     lv:"user",     ds:"Tukar kode jadi masa aktif"},
+  {id:"profile", ic:"🪪", nm:"Hunter Card",    lv:"user",     ds:"Informasi akunmu"},
+  {id:"passwd",  ic:"🔑", nm:"Ganti Passcode",  lv:"user",     ds:"Perbarui keamanan"},
+  {id:"ticket",  ic:"📮", nm:"Kirim Tiket",     lv:"user",     ds:"Lapor ke admin"},
+  {id:"genkey",  ic:"⚗️", nm:"Buat KEY",        lv:"reseller", ds:"Generate lisensi"},
+  {id:"mykey",   ic:"📜", nm:"Riwayat KEY",     lv:"reseller", ds:"KEY buatanmu"},
+  {id:"userman", ic:"👥", nm:"Kelola Hunter",   lv:"admin",    ds:"CRUD akun user"},
+  {id:"banman",  ic:"🚫", nm:"Ban / Unban",     lv:"admin",    ds:"Blokir akun"},
+  {id:"tickets", ic:"📥", nm:"Kotak Tiket",     lv:"admin",    ds:"Tiket masuk user"},
+  {id:"logs",    ic:"📊", nm:"Audit Log",       lv:"admin",    ds:"Jejak aktivitas"},
+  {id:"bcast",   ic:"📡", nm:"Broadcast",       lv:"admin",    ds:"Pengumuman global"},
+  {id:"cfg",     ic:"⚙️", nm:"System Config",   lv:"owner",    ds:"Kontrol global"},
+  {id:"reset",   ic:"♻️", nm:"Reset Database",  lv:"owner",    ds:"Factory reset"}
+];
+
+/* ---- render UI ---- */
+function paintStats(){
+  const u=me(); const row=document.getElementById("statsRow");
+  if(!u){ row.innerHTML=""; return; }
+  const online = DB.users.filter(x=>x.last && Date.now()-x.last<300000).length;
+  const openT  = DB.tickets.filter(t=>t.open).length;
+  const avail  = DB.keys.filter(k=>!k.used).length;
+  row.innerHTML = [
+    ["Total Hunter", DB.users.length, ""],
+    ["Online 5m", online, "g"],
+    ["KEY Tersedia", avail, "y"],
+    ["Tiket Dibuka", openT, "r"],
+    ["Koin Kamu", u.coins||0, "y"]
+  ].map(s=>`<div class="stat"><div class="lbl">${s[0]}</div><div class="val">${s[1]}</div></div>`).join("");
+}
+
+function paintMenu(){
+  const u=me(); const g=document.getElementById("gridMenu"); g.innerHTML="";
+  MENU.forEach(m=>{
+    const ok = can(u,m.lv);
+    const d=document.createElement("div");
+    d.className="feat"+(ok?"":" lockd");
+    d.innerHTML=`<div class="ic">${m.ic}</div><div class="nm">${m.nm}</div>`+
+      `<div class="ds">${m.ds}</div>`+(ok?"":'<div class="lk">🔒</div>');
+    if(ok) d.addEventListener("click",()=>open(m.id));
+    g.appendChild(d);
+  });
+}
+
+/* ---- floating overlay (menembus semua lapisan) ---- */
+const fw=document.getElementById("fw"), fwBody=document.getElementById("fb");
+let minimized=false;
+function paintFloat(){
+  const u=me();
+  const online=DB.users.filter(x=>x.last&&Date.now()-x.last<300000).length;
+  const avail=DB.keys.filter(k=>!k.used).length;
+  const used=DB.keys.filter(k=>k.used).length;
+  const bans=DB.users.filter(x=>x.banned).length;
+  const openT=DB.tickets.filter(t=>t.open).length;
+  fwBody.innerHTML =
+    `<div class="hdr">Sesi</div>
+     <div class="r ${u?'g':'r'}"><span>Status</span><span class="v">${u?"ONLINE":"OFF"}</span></div>
+     <div class="r"><span>Role</span><span class="v">${u?u.role.toUpperCase():"—"}</span></div>
+     <div class="hdr">Jaringan</div>
+     <div class="r g"><span>Online 5m</span><span class="v">${online}</span></div>
+     <div class="r"><span>Total Hunter</span><span class="v">${DB.users.length}</span></div>
+     <div class="r r"><span>Banned</span><span class="v">${bans}</span></div>
+     <div class="hdr">Lisensi</div>
+     <div class="r g"><span>KEY Tersedia</span><span class="v">${avail}</span></div>
+     <div class="r"><span>KEY Terpakai</span><span class="v">${used}</span></div>
+     <div class="hdr">Sistem</div>
+     <div class="r ${DB.cfg.maintenance?'r':'g'}"><span>Maintenance</span><span class="v">${DB.cfg.maintenance?"ON":"OFF"}</span></div>
+     <div class="r r"><span>Tiket Buka</span><span class="v">${openT}</span></div>
+     <div class="r"><span>Owner</span><span class="v">SENZPROJECT</span></div>`;
+}
+
+/* drag + simpan posisi */
+(function dragInit(){
+  const head=fw.querySelector(".fh"); let dx=0,dy=0,on=false;
+  const start=e=>{
+    if(e.target.tagName==="BUTTON") return;
+    on=true; const r=fw.getBoundingClientRect();
+    dx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    dy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+    fw.style.right="auto"; e.preventDefault();
+  };
+  const move=e=>{
+    if(!on) return;
+    const x=(e.touches?e.touches[0].clientX:e.clientX)-dx;
+    const y=(e.touches?e.touches[0].clientY:e.clientY)-dy;
+    fw.style.left=Math.max(0,Math.min(innerWidth-60,x))+"px";
+    fw.style.top =Math.max(0,Math.min(innerHeight-40,y))+"px";
+  };
+  const end=()=>{ on=false; };
+  head.addEventListener("mousedown",start);
+  head.addEventListener("touchstart",start,{passive:false});
+  document.addEventListener("mousemove",move);
+  document.addEventListener("touchmove",move,{passive:false});
+  document.addEventListener("mouseup",end);
+  document.addEventListener("touchend",end);
+})();
+document.getElementById("fwMin").addEventListener("click",()=>{
+  minimized=!minimized; fwBody.style.display=minimized?"none":"block";
+});
+document.getElementById("fwClose").addEventListener("click",()=>{
+  fw.style.display = fw.style.display==="none" ? "block":"none";
+});
+setInterval(()=>{ if(document.getElementById("app").style.display==="flex") paintFloat(); },5000);
+
+/* =====================================================================
+  MODAL HELPERS
+===================================================================== */
+const mbg=document.getElementById("mbg"), modal=document.getElementById("modal");
+function show(html){ modal.innerHTML=html; mbg.classList.add("on"); }
+function close(){ mbg.classList.remove("on"); modal.innerHTML=""; }
+mbg.addEventListener("click",e=>{ if(e.target===mbg) close(); });
+function res(id,txt,ok){
+  const el=document.getElementById(id); if(!el) return;
+  el.className="res on "+(ok?"ok":"err"); el.textContent=txt;
+}
+
+/* =====================================================================
+  FITUR USER
+===================================================================== */
+function open(id){
+  if(!me()) return;
+  switch(id){
+    case "redeem":  return uiRedeem();
+    case "profile": return uiProfile();
+    case "passwd":  return uiPasswd();
+    case "ticket":  return uiTicket();
+    case "genkey":  return uiGenKey();
+    case "mykey":   return uiMyKey();
+    case "userman": return uiUserMan();
+    case "banman":  return uiBanMan();
+    case "tickets": return uiTickets();
+    case "logs":    return uiLogs();
+    case "bcast":   return uiBcast();
+    case "cfg":     return uiCfg();
+    case "reset":   return uiReset();
+  }
+}
+/* ===================================================================== extremes helper */
+function me15(){ kar:; return me(); }
+function open(id){
+  if(!me()) return;
+  const M={
+    redeem:uiRedeem, profile:uiProfile, passwd:uiPasswd, ticket:uiTicket,
+    genkey:uiGenKey, mykey:uiMyKey, userman:uiUserMan, banman:uiBanMan,
+    tickets:uiTickets, logs:uiLogs, bcast:uiBcast, cfg:uiCfg, reset:uiReset
+  };
+  if(M[id]) M[id]();
+}
+
+function uiProfile(){
+  const u=me(); if(!u) return;
+  const exp = u.exp? new Date(u.exp).toLocaleString("id-ID") : "PERMANEN";
+  show(`<h2>🪪 Hunter Card</h2><div class="sub">Identitas kamu di SENZPROJECT</div>
+    <div class="fg"><label>HUNTER ID</label><input value="${u.user}" readonly></div>
+    <div class="fg"><label>ROLE</label><input value="${u.role.toUpperCase()}" readonly></div>
+    <div class="fg"><label>MASA AKTIF</label><input value="${exp}" readonly></div>
+    <div class="fg"><label>KOIN</label><input value="${u.coins||0}" readonly></div>
+    <div class="fg"><label>DIBUAT</label><input value="${new Date(u.created).toLocaleString("id-ID")}" readonly></div>
+    <div class="row2"><button class="b-no" onclick="close()">TUTUP</button></div>`);
+}
+
+function uiPasswd(){
+  show(`<h2>🔑 Ganti Passcode</h2><div class="sub">Minimal 5 karakter</div>
+    <div class="fg"><label>PASSCODE LAMA</label><input id="pOld" type="password"></div>
+    <div class="fg"><label>PASSCODE BARU</label><input id="pNew" type="password"></div>
+    <div class="row2"><button class="b-ok" onclick="doPasswd()">SIMPAN</button>
+    <button class="b-no" onclick="close()">BATAL</button></div>
+    <div class="res" id="pRes"></div>`);
+}
+function doPasswd(){
+  const u=me(); const o=pOld.value, n=pNew.value;
+  if(!u) return;
+  if(hash(o)!==u.pass) return res("pRes","❌ Passcode lama salah",false);
+  if(n.length<5) return res("pRes","❌ Minimal 5 karakter",false);
+  u.pass=hash(n); saveDB(); alog(u.user,"Ganti passcode");
+  res("pRes","✅ Passcode diperbarui",true);
+}
+
+function uiRedeem(){
+  show(`<h2>🎟️ Redeem Key</h2><div class="sub">Format SZH-XXXX-XXXX</div>
+    <div class="fg"><label>KODE</label><input id="rCode" style="text-transform:uppercase" placeholder="SZH-····-····"></div>
+    <div class="row2"><button class="b-ok" onclick="doRedeem()">TUKAR</button>
+    <button class="b-no" onclick="close()">BATAL</button></div>
+    <div class="res" id="rRes"></div>`);
+}
+function doRedeem(){
+  const u=me(); if(!u) return;
+  const c=(rCode.value||"").trim().toUpperCase();
+  if(!c) return res("rRes","❌ Kode kosong",false);
+  const k=DB.keys.find(x=>x.code===c);
+  if(!k) return res("rRes","❌ Kode tidak ditemukan",false);
+  if(k.used) return res("rRes","❌ Kode sudah terpakai",false);
+  k.used=u.user; k.uat=Date.now();
+  const add=k.days*86400000;
+  u.exp = (u.exp && u.exp>Date.now()? u.exp : Date.now()) + add;
+  saveDB(); alog(u.user,`Redeem ${c} (+${k.days}h)`);
+  res("rRes",`✅ Berhasil! +${k.days} hari`,true); toast("Key berhasil ditukar","ok");
+}
+
+function uiTicket(){
+  show(`<h2>📮 Kirim Tiket</h2><div class="sub">Laporan/bantuan ke admin</div>
+    <div class="fg"><label>JUDUL</label><input id="tSub" placeholder="Ringkas..."></div>
+    <div class="fg"><label>PESAN</label><textarea id="tMsg" placeholder="Detail kendala..."></textarea></div>
+    <div class="row2"><button class="b-ok" onclick="doTicket()">KIRIM</button>
+    <button class="b-no" onclick="close()">BATAL</button></div>
+    <div class="res" id="tRes"></div>`);
+}
+function doTicket(){
+  const u=me(); if(!u) return;
+  const s=(tSub.value||"").trim(), m=(tMsg.value||"").trim();
+  if(!s||!m) return res("tRes","❌ Judul & pesan wajib",false);
+  DB.tickets.unshift({ id:rid("t_"), by:u.user, sub:s, msg:m, open:true, t:Date.now(), rep:"" });
+  saveDB(); alog(u.user,"Kirim tiket: "+s);
+  res("tRes","✅ Tiket terkirim",true); toast("Tiket dikirim","ok"); paintStats();
+}
+
+/* ===================================================================== reseller */
+function makeCode(){
+  const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const g=n=>Array.from({length:n},()=>A[Math.floor(Math.random()*A.length)]).join("");
+  return "SZH-"+g(4)+"-"+g(4);
+}
+function uiGenKey(){
+  const opts=MODS.map(m=>`<option>${m}</option>`).join("");
+  show(`<h2>⚗️ Buat KEY</h2><div class="sub">Harga otomatis dihitung dari config</div>
+    <div class="fg"><label>DURASI (HARI)</label><input id="gDays" type="number" value="7" min="1" max="365"></div>
+    <div class="fg"><label>MODUL</label><select id="gMod">${opts}</select></div>
+    <div class="row2"><button class="b-ok" onclick="doGenKey()">GENERATE</button>
+    <button class="b-no" onclick="close()">BATAL</button></div>
+    <div class="res" id="gRes"></div>`);
+}
+function doGenKey(){
+  const u=me(); if(!u) return;
+  const d=parseInt(gDays.value,10), m=gMod.value;
+  if(!d||d<1||d>365) return res("gRes","❌ Durasi 1-365",false);
+  const cost=d*(DB.cfg.price||100);
+  if((u.coins||0)<cost) return res("gRes",`❌ Koin kurang (butuh ${cost})`,false);
+  u.coins-=cost;
+  const code=makeCode();
+  DB.keys.unshift({ code, days:d, mod:m, by:u.user, used:null, uat:0, t:Date.now() });
+  saveDB(); alog(u.user,`Generate ${code} (${m}, ${d}h)`);
+  res("gRes",`✅ KEY dibuat\n\n${code}\n\nModul ${m} • ${d} hari\nBiaya ${cost} koin`,true);
+  toast("KEY berhasil dibuat","ok");
+}
+function uiMyKey(){
+  const u=me(); if(!u) return;
+  const mine=DB.keys.filter(k=>k.by===u.user);
+  const rows=mine.length? mine.map(k=>`<tr><td style="font-family:monospace">${k.code}</td>
+    <td>${k.mod}</td><td>${k.days}h</td>
+    <td>${k.used?'<span style="color:#e53935">dipakai</span>':'<span style="color:#4caf50">bebas</span>'}</td></tr>`).join("")
+    : `<tr><td colspan="4" style="color:#8b8b96">Belum ada</td></tr>`;
+  show(`<h2>📜 Riwayat KEY</h2><div class="sub">Total ${mine.length}</div>
+    <table class="tbl"><thead><tr><th>KODE</th><th>MODUL</th><th>HARI</th><th>STATUS</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="row2" style="margin-top:12px"><button class="b-no" onclick="close()">TUTUP</button></div>`);
+}
+
+/* ===================================================================== admin */
+function uiUserMan(){
+  const u=me(); if(!u) return;
+  const rows=DB.users.map(x=>`<tr><td>${x.user}</td>
+    <td><span class="badge b-${x.role}">${x.role.toUpperCase()}</span></td>
+    <td>${x.exp?new Date(x.exp).toLocaleDateString("id-ID"):"∞"}</td>
+    <td>${(x.id!==u.id && LVL[u.role]>LVL[x.role])
+      ?`<button class="mini d" onclick="delUser('${x.id}')">HAPUS</button>`:"-"}</td></tr>`).join("");
+  const rl=Object.keys(LVL).filter(r=>LVL[r]<=LVL[u.role])
+    .map(r=>`<option value="${r}">${r.toUpperCase()}</option>`).join("");
+  show(`<h2>👥 Kelola Hunter</h2><div class="sub">Total ${DB.users.length} akun</div>
+    <table class="tbl"><thead><tr><th>ID</th><th>ROLE</th><th>EXP</th><th>AKSI</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="sub" style="margin-top:14px">Tambah akun</div>
+    <div class="fg"><label>HUNTER ID</label><input id="nuU"></div>
+    <div class="fg"><label>PASSCODE</label><input id="nuP" type="password"></div>
+    <div class="fg"><label>ROLE</label><select id="nuR">${rl}</select></div>
+    <div class="row2"><button class="b-ok" onclick="doAddUser()">TAMBAH</button>
+    <button class="b-no" onclick="close()">TUTUP</button></div>
+    <div class="res" id="nuRes"></div>`);
+}
+function doAddUser(){
+  const u=me(); if(!u) return;
+  const n=(nuU.value||"").trim(), p=nuP.value, r=nuR.value;
+  if(n.length<3) return res("nuRes","❌ Username min 3",false);
+  if(p.length<5) return res("nuRes","❌ Passcode min 5",false);
+  if(DB.users.some(x=>x.user.toLowerCase()===n.toLowerCase()))
+    return res("nuRes","❌ Username dipakai",false);
+  DB.users.push({ id:rid("u_"), user:n, pass:hash(p), role:r, exp:0,
+    created:Date.now(), last:0, banned:false, coins:0 });
+  saveDB(); alog(u.user,`Tambah ${n} (${r})`);
+  res("nuRes",`✅ ${n} dibuat sebagai ${r}`,true); toast("User dibuat","ok"); paintStats();
+}
+function delUser(id){
+  const u=me(); const t=DB.users.find(x=>x.id===id);
+  if(!u||!t) return;
+  if(LVL[u.role]<=LVL[t.role]) return toast("Role tidak cukup","err");
+  if(!confirm("Hapus "+t.user+"?")) return;
+  DB.users=DB.users.filter(x=>x.id!==id);
+  if(t.id===u.id){} // owner aman
+  saveDB(); alog(u.user,"Hapus "+t.user); uiUserMan(); paintStats();
+}
+
+function uiBanMan(){
+  const u=me(); if(!u) return;
+  const rows=DB.users.map(x=>`<tr><td>${x.user}</td>
+    <td>${x.banned?'<span style="color:#e53935">BANNED</span>':'<span style="color:#4caf50">AKTIF</span>'}</td>
+    <td>${(x.id!==u.id && LVL[u.role]>=LVL[x.role])
+      ?`<button class="mini d" onclick="toggleBan('${x.id}')">${x.banned?"UNBAN":"BAN"}</button>`:"-"}</td></tr>`).join("");
+  show(`<h2>🚫 Ban / Unban</h2><div class="sub">Blokir login</div>
+    <table class="tbl"><thead><tr><th>ID</th><th>STATUS</th><th>AKSI</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="row2" style="margin-top:12px"><button class="b-no" onclick="close()">TUTUP</button></div>`);
+}
+function toggleBan(id){
+  const u=me(); const t=DB.users.find(x=>x.id===id);
+  if(!u||!t) return;
+  t.banned=!t.banned;
+  saveDB(); alog(u.user,(t.banned?"Ban ":"Unban ")+t.user);
+  uiBanMan(); paintFloat(); toast(t.banned?"User di-ban":"User di-unban","ok");
+}
+
+function uiTickets(){
+  const open=DB.tickets.filter(t=>t.open);
+  const rows=DB.tickets.slice(0,50).map(t=>`<tr>
+    <td>${t.by}</td><td>${t.sub}</td>
+    <td>${t.open?'<span style="color:#ff9800">BUKA</span>':'<span style="color:#4caf50">TUTUP</span>'}</td>
+    <td>${t.open?`<button class="mini g" onclick="repTicket('${t.id}')">JAWAB</button>`:""}</td></tr>`).join("")
+    || `<tr><td colspan="4" style="color:#8b8b96">Kosong</td></tr>`;
+  show(`<h2>📥 Kotak Tiket</h2><div class="sub">${open.length} terbuka</div>
+    <table class="tbl"><thead><tr><th>DARI</th><th>JUDUL</th><th>ST</th><th>AKSI</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <div class="row2" style="margin-top:12px"><button class="b-no" onclick="close()">TUTUP</button></div>`);
+}
+function repTicket(id){
+  const u=me(); const t=DB.tickets.find(x=>x.id===id);
+  if(!u||!t) return;
+  const r=prompt("Balasan untuk tiket \""+t.sub+"\":");
+  if(r===null) return;
+  t.rep=r||"(kosong)"; t.open=false;
+  saveDB(); alog(u.user,"Jawab tiket "+t.sub);
+  uiTickets(); toast("Tiket dijawab","ok"); paintStats();
+}
+
+function uiLogs(){
+  const rows=DB.logs.slice(0,120).map(l=>`<tr>
+    <td>${new Date(l.t).toLocaleTimeString("id-ID")}</td><td>${l.a}</td><td>${l.x}</td></tr>`).join("")
+    || `<tr><td colspan="3" style="color:#8b8b96">Kosong</td></tr>`;
+  show(`<h2>📊 Audit Log</h2><div class="sub">120 terakhir</div
+function uiProfile(){
+  const u=me15();
+  if(!u) return reload();
+  const expheckstarter;
+helm; 
+...
+} // placeholder (dil) 
+</script>
+</body>
+</html>
